@@ -81,11 +81,38 @@ For complex decisions, convene the full committee and synthesize their recommend
 
 ---
 
+## Claude Code Integration
+
+### Slash Commands
+
+| Command | Action |
+|---------|--------|
+| `/start` | Boot Athena session (runs `athena`) |
+| `/end` | Close session (runs `athena --end`) |
+| `/save [summary]` | Quicksave checkpoint (runs `athena save`) |
+
+### MCP Tools (via .mcp.json)
+
+If the Athena MCP server is running, these tools are available:
+- `smart_search` — Search Athena's knowledge base (hybrid RAG)
+- `quicksave` — Save checkpoint programmatically
+- `recall_session` — Retrieve recent session log content
+- `health_check` — System health audit
+
+### Session Hook
+
+A SessionStart hook in `.claude/settings.json` reminds you to boot Athena at the start of every session.
+
+---
+
 ## Workspace Structure
 
 ```
 .framework/modules/    Core Identity and operating principles
 .context/              Session logs, project state, memories
 .agent/                Workflows, scripts, skills, protocols
-.claude/agents/        COS review agents (Claude Code integration)
+.claude/agents/        COS review agents (6 specialized perspectives)
+.claude/skills/        Slash commands (/start, /end, /save)
+.claude/rules/         Behavioral rules (session discipline, framework protection)
+.mcp.json              Athena MCP server configuration
 ```

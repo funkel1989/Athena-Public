@@ -420,17 +420,9 @@ def _create_ide_config(root: Path, ide: str) -> None:
             print("   ⏭️  AGENTS.md (already exists)")
 
     elif ide == "claude":
-        # Claude Code uses CLAUDE.md
-        claude_md_path = root / "CLAUDE.md"
-        if not claude_md_path.exists():
-            template_path = Path(__file__).resolve().parents[1] / "templates" / "CLAUDE_ATHENA.md"
-            if template_path.exists():
-                shutil.copy2(template_path, claude_md_path)
-            else:
-                claude_md_path.write_text("# Athena Integration\n\nRun `athena` to boot.\n")
-            print("   ✅ CLAUDE.md (Claude Code rules)")
-        else:
-            print("   ⏭️  CLAUDE.md (already exists)")
+        from athena.cli.init_claude import create_claude_config
+
+        create_claude_config(root)
 
     elif ide == "cursor":
         # Cursor uses .cursorrules

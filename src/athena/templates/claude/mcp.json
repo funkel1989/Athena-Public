@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "athena": {
+      "command": "python",
+      "args": ["-m", "athena.mcp_server"],
+      "env": {}
+    }
+  }
+}
