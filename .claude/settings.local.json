@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /c/code/tools/Athena-Public diff --stat HEAD)"
+    ]
+  }
+}
