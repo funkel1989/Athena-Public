@@ -13,8 +13,35 @@ Usage:
     athena init my-project            # Create new project directory
 """
 
+import shutil
 from datetime import datetime
 from pathlib import Path
+
+# Athena package root (for locating examples/ to copy into workspaces)
+_ATHENA_PKG_ROOT = Path(__file__).resolve().parents[3]
+_EXAMPLES_SCRIPTS = _ATHENA_PKG_ROOT / "examples" / "scripts"
+_EXAMPLES_TEMPLATES = _ATHENA_PKG_ROOT / "examples" / "templates"
+
+# Boot-critical scripts that must exist in .agent/scripts/ for `athena` to run
+_BOOT_SCRIPTS = [
+    "create_session.py",      # CRITICAL: session creation (sys.exit on failure)
+    "compact_context.py",     # HIGH: auto-compaction when token budget exceeded
+    "semantic_audit.py",      # OPTIONAL: audit reset on boot
+    "smart_search.py",        # OPTIONAL: semantic priming
+]
+
+# Memory bank templates to copy into .context/memory_bank/
+_MEMORY_BANK_FILES = [
+    "activeContext.md",
+    "userContext.md",
+    "productContext.md",
+]
+
+# Framework mirror files to copy into .framework/modules/
+_FRAMEWORK_MODULES = [
+    "Core_Identity.md",       # CRITICAL: verified by SHA-384 at boot
+    "Athena_Profile.md",      # OPTIONAL: cognitive profile display
+]
 
 
 # --- Templates ---
@@ -257,8 +284,10 @@ def init_workspace(target_dir: Path = None, ide: str = None) -> bool:
         ".agent/workflows",
         ".agent/scripts",
         ".agent/skills/protocols",
+        ".agent/state",
         ".framework/modules",
         ".context/memories/session_logs",
+        ".context/memory_bank",
         ".context/data",
     ]
 
@@ -274,14 +303,10 @@ def init_workspace(target_dir: Path = None, ide: str = None) -> bool:
     marker_path.write_text(f"# Athena Workspace\nCreated: {datetime.now().isoformat()}\n")
     print("   ✅ .athena_root (workspace marker)")
 
-    # Create template files
+    # Create template files (inline content)
     today = datetime.now().strftime("%Y-%m-%d")
 
     templates = [
-        (
-            ".framework/modules/Core_Identity.md",
-            CORE_IDENTITY_TEMPLATE.format(date=today),
-        ),
         (".agent/workflows/start.md", START_WORKFLOW_TEMPLATE),
         (".agent/workflows/end.md", END_WORKFLOW_TEMPLATE),
         (".agent/workflows/save.md", SAVE_WORKFLOW_TEMPLATE),
@@ -299,6 +324,9 @@ def init_workspace(target_dir: Path = None, ide: str = None) -> bool:
             print(f"   ✅ {file_path}")
         else:
             print(f"   ⏭️  {file_path} (already exists)")
+
+    # Copy boot-critical files from Athena package examples/
+    _copy_boot_files(root, today)
 
     # IDE-specific configuration
     if ide:
@@ -318,6 +346,67 @@ def init_workspace(target_dir: Path = None, ide: str = None) -> bool:
     return True
 
 
+def _copy_file(src: Path, dest: Path, label: str) -> None:
+    """Copy a single file if it doesn't already exist in the workspace."""
+    if dest.exists():
+        print(f"   ⏭️  {label} (already exists)")
+        return
+    if not src.exists():
+        print(f"   ⚠️  {label} (source not found, skipped)")
+        return
+    shutil.copy2(src, dest)
+    print(f"   ✅ {label}")
+
+
+def _copy_boot_files(root: Path, today: str) -> None:
+    """Copy boot-critical scripts, framework modules, and memory bank templates."""
+    if not _EXAMPLES_SCRIPTS.is_dir():
+        print(f"\n⚠️  Cannot locate Athena examples/ directory.")
+        print(f"   Expected: {_EXAMPLES_SCRIPTS}")
+        print(f"   Boot scripts will not be copied. You may need to copy them manually.")
+        # Fall back to inline Core_Identity template
+        ci_fallback = root / ".framework" / "modules" / "Core_Identity.md"
+        if not ci_fallback.exists():
+            ci_fallback.write_text(CORE_IDENTITY_TEMPLATE.format(date=today))
+            print(f"   ✅ .framework/modules/Core_Identity.md (fallback template)")
+        return
+
+    # 1. Boot scripts → .agent/scripts/
+    print("\n📦 Copying boot scripts...")
+    for script in _BOOT_SCRIPTS:
+        src = _EXAMPLES_SCRIPTS / script
+        dest = root / ".agent" / "scripts" / script
+        _copy_file(src, dest, f".agent/scripts/{script}")
+
+    # 2. Framework modules → .framework/modules/
+    print("\n📦 Copying framework modules...")
+    fw_src_dir = _EXAMPLES_TEMPLATES / "framework_mirror" / "v8.2-stable" / "modules"
+    fw_dest_dir = root / ".framework" / "modules"
+    if fw_src_dir.is_dir():
+        for module in _FRAMEWORK_MODULES:
+            src = fw_src_dir / module
+            dest = fw_dest_dir / module
+            _copy_file(src, dest, f".framework/modules/{module}")
+    else:
+        # Fall back to inline template for Core_Identity
+        ci_fallback = fw_dest_dir / "Core_Identity.md"
+        if not ci_fallback.exists():
+            ci_fallback.write_text(CORE_IDENTITY_TEMPLATE.format(date=today))
+            print(f"   ✅ .framework/modules/Core_Identity.md (fallback template)")
+
+    # 3. Memory bank templates → .context/memory_bank/
+    print("\n📦 Copying memory bank templates...")
+    mb_src_dir = _EXAMPLES_TEMPLATES / "memory_bank"
+    mb_dest_dir = root / ".context" / "memory_bank"
+    if mb_src_dir.is_dir():
+        for template in _MEMORY_BANK_FILES:
+            src = mb_src_dir / template
+            dest = mb_dest_dir / template
+            _copy_file(src, dest, f".context/memory_bank/{template}")
+    else:
+        print(f"   ⚠️  Memory bank templates not found, skipped")
+
+
 def _create_ide_config(root: Path, ide: str) -> None:
     """Create IDE-specific configuration files."""
 
@@ -329,6 +418,19 @@ def _create_ide_config(root: Path, ide: str) -> None:
             print("   ✅ AGENTS.md (Antigravity rules)")
         else:
             print("   ⏭️  AGENTS.md (already exists)")
+
+    elif ide == "claude":
+        # Claude Code uses CLAUDE.md
+        claude_md_path = root / "CLAUDE.md"
+        if not claude_md_path.exists():
+            template_path = Path(__file__).resolve().parents[1] / "templates" / "CLAUDE_ATHENA.md"
+            if template_path.exists():
+                shutil.copy2(template_path, claude_md_path)
+            else:
+                claude_md_path.write_text("# Athena Integration\n\nRun `athena` to boot.\n")
+            print("   ✅ CLAUDE.md (Claude Code rules)")
+        else:
+            print("   ⏭️  CLAUDE.md (already exists)")
 
     elif ide == "cursor":
         # Cursor uses .cursorrules

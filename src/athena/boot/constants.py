@@ -7,9 +7,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 LOGS_DIR = PROJECT_ROOT / ".context" / "memories" / "session_logs"
 SUPABASE_SEARCH_SCRIPT = PROJECT_ROOT / ".agent" / "scripts" / "smart_search.py"
 PROTOCOLS_JSON = PROJECT_ROOT / ".agent" / "protocols.json"
-CORE_IDENTITY = (
-    PROJECT_ROOT / ".framework" / "v8.2-stable" / "modules" / "Core_Identity.md"
-)
+CORE_IDENTITY = PROJECT_ROOT / ".framework" / "modules" / "Core_Identity.md"
 SAFE_BOOT_SCRIPT = PROJECT_ROOT / "safe_boot.sh"
 
 # Memory Bank (Token Budget)

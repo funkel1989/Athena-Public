@@ -52,13 +52,7 @@ class IdentityLoader:
     @staticmethod
     def display_cognitive_profile():
         """Reads and displays Section 0 and Section 5 of Athena Profile."""
-        profile_path = (
-            PROJECT_ROOT
-            / ".framework"
-            / "v8.2-stable"
-            / "modules"
-            / "Athena_Profile.md"
-        )
+        profile_path = PROJECT_ROOT / ".framework" / "modules" / "Athena_Profile.md"
         if not profile_path.exists():
             return
 
