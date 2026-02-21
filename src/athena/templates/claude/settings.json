@@ -14,7 +14,8 @@
       "Bash(athena --end)",
       "Bash(athena check)",
       "Bash(athena doctor*)",
-      "Bash(athena --version)"
+      "Bash(athena --version)",
+      "Bash(athena identity*)"
     ]
   }
 }

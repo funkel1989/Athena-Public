@@ -9,6 +9,9 @@ Usage:
     athena init .              # Initialize workspace in current directory
     athena init --here         # Same as above (alias)
     athena init --ide cursor   # Init with IDE-specific config
+    athena identity            # Build personalized Core Identity
+    athena identity --update-hash  # Recompute SHA-384 hash
+    athena identity --reset    # Reset to default template
     athena check               # Run system health check
     athena save "summary"      # Quicksave checkpoint
     athena --version           # Show version
@@ -144,6 +147,21 @@ def main():
         "--quiet", "-q", action="store_true", help="Summary only"
     )
 
+    # identity subcommand
+    identity_parser = subparsers.add_parser(
+        "identity", help="Build your personalized Core Identity"
+    )
+    identity_parser.add_argument(
+        "--update-hash",
+        action="store_true",
+        help="Recompute SHA-384 hash for current Core Identity",
+    )
+    identity_parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Reset Core Identity to default template",
+    )
+
     # save subcommand
     save_parser = subparsers.add_parser(
         "save", help="Quicksave checkpoint to session log"
@@ -194,6 +212,21 @@ def main():
         from athena.boot.shutdown import run_shutdown
 
         success = run_shutdown(project_root=args.root)
+        sys.exit(0 if success else 1)
+
+    if args.command == "identity":
+        from athena.cli.identity import (
+            run_identity_builder,
+            update_identity_hash,
+            reset_identity,
+        )
+
+        if args.update_hash:
+            success = update_identity_hash(root=args.root)
+        elif args.reset:
+            success = reset_identity(root=args.root)
+        else:
+            success = run_identity_builder(root=args.root)
         sys.exit(0 if success else 1)
 
     if args.command == "save":

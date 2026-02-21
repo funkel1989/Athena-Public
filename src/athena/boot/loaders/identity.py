@@ -34,11 +34,21 @@ class IdentityLoader:
             print(f"{RED}[FATAL] Cannot read Core_Identity.md: {e}{RESET}")
             return False
 
-        if EXPECTED_CORE_HASH is not None:
-            if current_hash != EXPECTED_CORE_HASH:
+        # Check for local hash file first (set by `athena identity`)
+        local_hash_file = CORE_IDENTITY.parent.parent / ".identity_hash"
+        try:
+            if local_hash_file.exists():
+                expected_hash = local_hash_file.read_text(encoding="utf-8").strip()
+            else:
+                expected_hash = EXPECTED_CORE_HASH
+        except Exception:
+            expected_hash = EXPECTED_CORE_HASH
+
+        if expected_hash is not None:
+            if current_hash != expected_hash:
                 print(f"{RED}{'=' * 60}{RESET}")
                 print(f"{RED}{BOLD}🚨 SEMANTIC PRIME INTEGRITY FAILURE 🚨{RESET}")
-                print(f"Expected: {EXPECTED_CORE_HASH[:32]}...")
+                print(f"Expected: {expected_hash[:32]}...")
                 print(f"Actual:   {current_hash[:32]}...")
                 print(f"{BOLD}REFUSING TO BOOT. Manual review required.{RESET}")
                 return False

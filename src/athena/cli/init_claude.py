@@ -94,7 +94,7 @@ def create_claude_config(root: Path) -> None:
 
     # 4. Skills → .claude/skills/
     print("\n   📦 Skills...")
-    for skill_name in ("start", "end", "save"):
+    for skill_name in ("start", "end", "save", "identity"):
         src = _CLAUDE_TEMPLATES / "skills" / skill_name / "SKILL.md"
         dest = claude_dir / "skills" / skill_name / "SKILL.md"
         dest.parent.mkdir(parents=True, exist_ok=True)
