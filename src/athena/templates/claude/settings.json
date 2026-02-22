@@ -2,8 +2,12 @@
   "hooks": {
     "SessionStart": [
       {
-        "type": "command",
-        "command": "echo '## Athena Session\n\nRun `athena` to boot the session system. This loads your context, creates a session log, and initializes the Committee of Seats.\n\nUse `/start`, `/end`, `/save` for session management.'"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '## Athena Session\n\nRun `athena` to boot the session system. This loads your context, creates a session log, and initializes the Committee of Seats.\n\nUse `/start`, `/end`, `/save` for session management.'"
+          }
+        ]
       }
     ]
   },
